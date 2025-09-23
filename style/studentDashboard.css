@@ -1,0 +1,42 @@
+ body {
+      font-family: Arial, sans-serif;
+    }
+    .sidebar {
+      width: 250px;
+      min-height: 100vh;
+      transition: all 0.3s;
+      position: fixed;
+      left: -250px;
+      top: 0;
+      background: #212529;
+      z-index: 1000;
+    }
+    .sidebar.active {
+      left: 0;
+    }
+    .sidebar .nav-link {
+      color: white;
+      margin: 5px 0;
+      border-radius: 5px;
+    }
+    .sidebar .nav-link:hover {
+      background: #495057;
+    }
+    .content {
+      margin-left: 0;
+      transition: all 0.3s;
+    }
+    .content.active {
+      margin-left: 250px;
+    }
+    @media (min-width: 768px) {
+      .sidebar {
+        left: 0;
+      }
+      .content {
+        margin-left: 250px;
+      }
+      #menu-toggle {
+        display: none;
+      }
+    }
