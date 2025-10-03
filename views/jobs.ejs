@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title %></title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background:#f8f9fa; }
+    .job-card { cursor: pointer; }
+    .job-title { user-select: none; }
+    #BoxShadow { box-shadow: 3px 3px 3px 3px gray; }
+  </style>
+</head>
+<body>
+
+<div class="container py-5">
+  <h2 class="mb-4 text-primary">Available Jobs</h2>
+
+  <div class="mb-4 text-end" id="adminJobButtonContainer" style="display: none;">
+    <a href="/admin/add-job" class="btn btn-primary">Add New Job</a>
+  </div>
+
+  <div id="jobsList" class="accordion">
+
+    <% if (jobs && jobs.length > 0) { %>
+      <% jobs.forEach(function(job) { %>
+        <div class="accordion-item mt-3" id="BoxShadow">
+          <h2 class="accordion-header" id="heading<%= job.id %>">
+            <button class="accordion-button collapsed job-card" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<%= job.id %>" aria-expanded="false" aria-controls="collapse<%= job.id %>">
+              <div class="w-100 d-flex justify-content-between align-items-center">
+                <div>
+                  <div class="fw-bold job-title"><%= job.title %></div>
+                  <small class="text-muted">Experience: <%= job.experience %> • Location: <%= job.location %></small>
+                </div>
+                <div class="text-end"><span class="badge bg-primary"><%= job.type %></span></div>
+              </div>
+            </button>
+          </h2>
+          <div id="collapse<%= job.id %>" class="accordion-collapse collapse" aria-labelledby="heading<%= job.id %>" data-bs-parent="#jobsList">
+            <div class="accordion-body">
+              <p><strong>Job Summary:</strong> <%= job.summary %></p>
+              <% if (job.responsibilities && job.responsibilities.length > 0) { %>
+                <p><strong>Responsibilities:</strong></p>
+                <ul>
+                  <% job.responsibilities.forEach(function(resp) { %>
+                    <li><%= resp %></li>
+                  <% }); %>
+                </ul>
+              <% } %>
+              <% if (job.requirements && job.requirements.length > 0) { %>
+                <p><strong>Requirements:</strong></p>
+                <ul>
+                  <% job.requirements.forEach(function(req) { %>
+                    <li><%= req %></li>
+                  <% }); %>
+                </ul>
+              <% } %>
+              <% if (job.stack && job.stack.length > 0) { %>
+                <p><strong>Stack:</strong> <%= job.stack.join(', ') %></p>
+              <% } %>
+              <div class="d-flex gap-2">
+                <button class="btn btn-success btn-apply" data-job="<%= job.title %>" data-bs-toggle="modal" data-bs-target="#applyModal">Apply</button>
+                <a href="mailto:hr@example.com?subject=Application%20for%20<%= job.title %>" class="btn btn-outline-secondary">Email HR</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% }); %>
+    <% } else { %>
+      <p class="text-center text-muted fs-5 mt-5">No jobs available at the moment.</p>
+    <% } %>
+
+  </div>
+</div>
+
+<!-- Apply Modal remains the same -->
+<div class="modal fade" id="applyModal" tabindex="-1" aria-labelledby="applyModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form id="applyForm" enctype="multipart/form-data">
+        <div class="modal-header">
+          <h5 class="modal-title" id="applyModalLabel">Apply for Job</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="jobName" name="jobName">
+          <div class="mb-3">
+            <label for="appName" class="form-label">Your name</label>
+            <input type="text" class="form-control" id="appName" name="name" required>
+          </div>
+          <div class="mb-3">
+            <label for="appEmail" class="form-label">Email</label>
+            <input type="email" class="form-control" id="appEmail" name="email" required>
+          </div>
+          <div class="mb-3">
+            <label for="appResume" class="form-label">Resume (PDF)</label>
+            <input class="form-control" type="file" id="appResume" name="resume" accept="application/pdf" required>
+          </div>
+          <div class="mb-3">
+            <label for="appMessage" class="form-label">Message (optional)</label>
+            <textarea class="form-control" id="appMessage" name="message" rows="3"></textarea>
+          </div>
+          <div id="formAlert" class="d-none alert" role="alert"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Send Application</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const userRole = localStorage.getItem('userRole');
+    if (userRole === 'admin') {
+      document.getElementById('adminJobButtonContainer').style.display = 'block';
+    }
+
+    // Apply modal functionality
+    document.querySelectorAll('.btn-apply').forEach(btn => {
+      btn.addEventListener('click', e => {
+        const job = btn.getAttribute('data-job') || 'Job';
+        document.getElementById('jobName').value = job;
+        document.getElementById('applyModalLabel').textContent = `Apply for: ${job}`;
+        document.getElementById('formAlert').classList.add('d-none');
+        document.getElementById('applyForm').reset();
+        document.getElementById('jobName').value = job;
+      });
+    });
+
+    document.getElementById('applyForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      const name = document.getElementById('appName').value.trim();
+      const email = document.getElementById('appEmail').value.trim();
+      const resume = document.getElementById('appResume').files[0];
+      const job = document.getElementById('jobName').value;
+      const alertBox = document.getElementById('formAlert');
+
+      if(!name || !email || !resume){
+        alertBox.textContent = 'Please fill name, email and upload resume (PDF).';
+        alertBox.className = 'alert alert-danger';
+        alertBox.classList.remove('d-none');
+        return;
+      }
+
+      if(resume.type !== 'application/pdf'){
+        alertBox.textContent = 'Resume must be a PDF file.';
+        alertBox.className = 'alert alert-danger';
+        alertBox.classList.remove('d-none');
+        return;
+      }
+
+      alertBox.textContent = `Application sent for ${job}. (Demo - not actually uploaded)`;
+      alertBox.className = 'alert alert-success';
+      alertBox.classList.remove('d-none');
+
+      setTimeout(() => {
+        const modalEl = document.getElementById('applyModal');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        modal.hide();
+      }, 900);
+    });
+  });
+</script>
+</body>
+</html>
