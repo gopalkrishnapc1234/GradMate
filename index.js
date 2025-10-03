@@ -36,7 +36,15 @@ app.get("/login", (req, res) => res.render("login",{ title: "Login" }));
 app.get("/register", (req, res) => res.render("register",{ title: "Register" }));
 app.get("/forgetPassword", (req, res) => res.render("forgetPassword", { title: "ForgetPassword", error: null, message: null })
 );
+app.get("/jobs", (req, res) => {
+  // Pass empty array to avoid EJS error
+  const jobs = [];
 
+  res.render("jobs", { 
+    title: "Jobs", 
+    jobs   // now jobs is defined
+  });
+});
 
 
 app.use("/user", userRoutes);
